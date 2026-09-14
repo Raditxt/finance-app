@@ -1,8 +1,21 @@
-<script>
+<script lang="ts">
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from './assets/vite.svg'
   import heroImg from './assets/hero.png'
   import Counter from './lib/Counter.svelte'
+
+  let status = $state("loading...");
+
+  $effect(() => {
+    fetch("http://localhost:3000/health")
+      .then((res) => res.json())
+      .then((data) => {
+        status = data.status;
+      })
+      .catch((err) => {
+        status = "error: " + err.message;
+      });
+  });
 </script>
 
 <section id="center">
@@ -16,6 +29,12 @@
     <p>Edit <code>src/App.svelte</code> and save to test <code>HMR</code></p>
   </div>
   <Counter />
+</section>
+
+<div class="ticks"></div>
+
+<section id="backend-status">
+  <h2>Backend status: {status}</h2>
 </section>
 
 <div class="ticks"></div>
