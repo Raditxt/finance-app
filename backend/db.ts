@@ -2,6 +2,7 @@ import { Database } from "bun:sqlite";
 
 const db = new Database("finance.sqlite");
 
+// Membuka atau membuat file database SQLite lokal bernama "finance.sqlite" menggunakan modul bawaan Bun
 db.run(`
   CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -10,6 +11,7 @@ db.run(`
   )
 `);
 
+// Membuat tabel 'transactions' jika belum ada untuk mencatat keluar-masuknya uang
 db.run(`
   CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,4 +23,5 @@ db.run(`
   )
 `);
 
+// Ekspor objek koneksi database agar bisa dipakai untuk query di file lain (routes/controllers)
 export default db;
