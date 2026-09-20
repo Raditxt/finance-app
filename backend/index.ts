@@ -20,14 +20,6 @@ app.get("/health", (c) => {
 // Transactions
 // =====================
 
-// GET — Ambil semua transaksi
-app.get("/transactions", (c) => {
-  const transactions = db
-    .query("SELECT * FROM transactions ORDER BY date DESC")
-    .all();
-  return c.json(transactions);
-});
-
 // GET — Ambil transaksi berdasarkan id
 app.get("/transactions/:id", (c) => {
   const id = c.req.param("id");
@@ -69,6 +61,14 @@ app.post("/transactions", async (c) => {
     },
     201
   );
+});
+
+// GET — Ambil semua transaksi
+app.get("/transactions", (c) => {
+  const transactions = db
+    .query("SELECT * FROM transactions ORDER BY date DESC")
+    .all();
+  return c.json(transactions);
 });
 
 // PUT — Update transaksi berdasarkan id
