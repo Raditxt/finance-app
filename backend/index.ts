@@ -1,6 +1,11 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import db from "./db"; // Import instance db untuk query & auto-init tabel
+import {
+  validateAmount,
+  validateTransactionType,
+  validateDate,
+} from "./validators";
 
 // Inisialisasi instance aplikasi Hono utama
 const app = new Hono();
@@ -38,13 +43,14 @@ app.post("/transactions", async (c) => {
   const body = await c.req.json();
   const { amount, type, category_id, date } = body;
 
-  // Validasi sederhana
-  if (amount === undefined || !type || !date) {
-    return c.json(
-      { error: "Field 'amount', 'type', dan 'date' wajib diisi" },
-      400
-    );
-  }
+  const amountError = validateAmount(amount);
+  if (amountError) return c.json({ error: amountError }, 400);
+
+  const typeError = validateTransactionType(type);
+  if (typeError) return c.json({ error: typeError }, 400);
+
+  const dateError = validateDate(date);
+  if (dateError) return c.json({ error: dateError }, 400);
 
   const result = db.run(
     "INSERT INTO transactions (amount, type, category_id, date) VALUES (?, ?, ?, ?)",
@@ -52,13 +58,7 @@ app.post("/transactions", async (c) => {
   );
 
   return c.json(
-    {
-      id: result.lastInsertRowid,
-      amount,
-      type,
-      category_id: category_id ?? null,
-      date,
-    },
+    { id: result.lastInsertRowid, amount, type, category_id, date },
     201
   );
 });
@@ -76,6 +76,16 @@ app.put("/transactions/:id", async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json();
   const { amount, type, category_id, date } = body;
+
+  // Validasi pakai helper yang sama seperti POST
+  const amountError = validateAmount(amount);
+  if (amountError) return c.json({ error: amountError }, 400);
+
+  const typeError = validateTransactionType(type);
+  if (typeError) return c.json({ error: typeError }, 400);
+
+  const dateError = validateDate(date);
+  if (dateError) return c.json({ error: dateError }, 400);
 
   const existing = db
     .query("SELECT * FROM transactions WHERE id = ?")
@@ -112,5 +122,8 @@ app.delete("/transactions/:id", (c) => {
   return c.json({ message: "Transaksi berhasil dihapus", id: Number(id) });
 });
 
-// Ekspor aplikasi agar bisa dijalankan oleh server runner Bun
-export default app;
+// Ekspor konfigurasi server Bun (port + fetch handler)
+export default {
+  port: process.env.PORT || 3000,
+  fetch: app.fetch,
+};

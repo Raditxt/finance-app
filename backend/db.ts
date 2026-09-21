@@ -1,8 +1,10 @@
 import { Database } from "bun:sqlite";
 
-const db = new Database("finance.sqlite");
+// Pakai DB_PATH dari env kalau ada, fallback ke "finance.sqlite"
+const dbPath = process.env.DB_PATH || "finance.sqlite";
+const db = new Database(dbPath);
 
-// Membuka atau membuat file database SQLite lokal bernama "finance.sqlite" menggunakan modul bawaan Bun
+// Membuka atau membuat file database SQLite lokal menggunakan modul bawaan Bun
 db.run(`
   CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
