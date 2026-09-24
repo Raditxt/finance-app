@@ -5,10 +5,23 @@
   let errorMessage = $state("");
   let successMessage = $state("");
 
+  // Validasi turunan (derived) — otomatis recalculate tiap kali amount/date berubah
+  let isFormValid = $derived(Number(amount) > 0 && date !== "");
+
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     errorMessage = "";
     successMessage = "";
+
+    // Validasi client-side dulu, sebelum kirim ke server
+    if (Number(amount) <= 0) {
+      errorMessage = "Jumlah harus lebih dari 0";
+      return;
+    }
+    if (date === "") {
+      errorMessage = "Tanggal wajib diisi";
+      return;
+    }
 
     const response = await fetch("http://localhost:3000/transactions", {
       method: "POST",
@@ -37,7 +50,20 @@
 <form onsubmit={handleSubmit}>
   <div>
     <label for="amount">Jumlah</label>
-    <input id="amount" type="number" bind:value={amount} required />
+    <input
+      id="amount"
+      type="number"
+      bind:value={amount}
+      min="1"
+      step="1"
+      onkeydown={(e) => {
+        // Blokir karakter minus (-) dan notasi ilmiah (e/E) dari keyboard
+        if (e.key === "-" || e.key === "e" || e.key === "E") {
+          e.preventDefault();
+        }
+      }}
+      required
+    />
   </div>
 
   <div>
@@ -53,7 +79,7 @@
     <input id="date" type="date" bind:value={date} required />
   </div>
 
-  <button type="submit">Simpan</button>
+  <button type="submit" disabled={!isFormValid}>Simpan</button>
 
   {#if errorMessage}
     <p style="color: red">{errorMessage}</p>
