@@ -1,10 +1,12 @@
 <script lang="ts">
   import TransactionForm from "./TransactionForm.svelte";
+  import TransactionList from "./TransactionList.svelte";
 </script>
 
 <main>
   <h1>Finance Tracker</h1>
   <TransactionForm />
+  <TransactionList />
 </main>
 
 <style>
