@@ -6,6 +6,10 @@ import {
   validateTransactionType,
   validateDate,
 } from "./validators";
+import {
+  validateCategoryName,
+  validateCategoryType,
+} from "./validators"; // baris baru
 
 // Inisialisasi instance aplikasi Hono utama
 const app = new Hono();
@@ -120,6 +124,37 @@ app.delete("/transactions/:id", (c) => {
   db.run("DELETE FROM transactions WHERE id = ?", [id]);
 
   return c.json({ message: "Transaksi berhasil dihapus", id: Number(id) });
+});
+
+// =====================
+// Categories
+// =====================
+
+// POST — Tambah kategori baru
+app.post("/categories", async (c) => {
+  const body = await c.req.json();
+  const { name, type } = body;
+
+  const nameError = validateCategoryName(name);
+  if (nameError) return c.json({ error: nameError }, 400);
+
+  const typeError = validateCategoryType(type);
+  if (typeError) return c.json({ error: typeError }, 400);
+
+  const result = db.run(
+    "INSERT INTO categories (name, type) VALUES (?, ?)",
+    [name, type]
+  );
+
+  return c.json({ id: result.lastInsertRowid, name, type }, 201);
+});
+
+// GET — Ambil semua kategori
+app.get("/categories", (c) => {
+  const categories = db
+    .query("SELECT * FROM categories ORDER BY name ASC")
+    .all();
+  return c.json(categories);
 });
 
 // Ekspor konfigurasi server Bun (port + fetch handler)

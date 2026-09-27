@@ -20,3 +20,17 @@ export function validateDate(date: unknown): string | null {
   }
   return null;
 }
+
+export function validateCategoryName(name: unknown): string | null {
+  if (typeof name !== "string" || name.trim().length === 0) {
+    return "name wajib diisi dan tidak boleh kosong";
+  }
+  return null;
+}
+
+export function validateCategoryType(type: unknown): string | null {
+  if (type !== "income" && type !== "expense") {
+    return "type harus 'income' atau 'expense'";
+  }
+  return null;
+}
