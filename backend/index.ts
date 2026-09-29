@@ -56,6 +56,23 @@ app.post("/transactions", async (c) => {
   const dateError = validateDate(date);
   if (dateError) return c.json({ error: dateError }, 400);
 
+  // Validasi category_id: kalau diisi, harus ada di tabel categories dan tipenya cocok
+  if (category_id !== null && category_id !== undefined) {
+    const category = db
+      .query("SELECT type FROM categories WHERE id = ?")
+      .get(category_id) as { type: string } | null;
+
+    if (!category) {
+      return c.json({ error: "category_id tidak ditemukan" }, 400);
+    }
+    if (category.type !== type) {
+      return c.json(
+        { error: "tipe kategori tidak sesuai dengan tipe transaksi" },
+        400
+      );
+    }
+  }
+
   const result = db.run(
     "INSERT INTO transactions (amount, type, category_id, date) VALUES (?, ?, ?, ?)",
     [amount, type, category_id ?? null, date]

@@ -1,11 +1,18 @@
 <script lang="ts">
   import TransactionForm from "./TransactionForm.svelte";
   import TransactionList from "./TransactionList.svelte";
+  import CategoryForm from "./CategoryForm.svelte";
+  import { loadCategories } from "./categories.svelte";
+
+  $effect(() => {
+    loadCategories();
+  });
 </script>
 
 <main>
   <h1>Finance Tracker</h1>
   <TransactionForm />
+  <CategoryForm />
   <TransactionList />
 </main>
 

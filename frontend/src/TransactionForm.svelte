@@ -1,11 +1,31 @@
 <script lang="ts">
-  let amount = $state("");
+  import { categoryStore } from "./categories.svelte";
+
+  let amount = $state(""); // nilai mentah, cuma digit, misal "50000"
   let type = $state("expense");
+  let categoryId = $state("");
   let date = $state("");
   let errorMessage = $state("");
   let successMessage = $state("");
 
-  // Validasi turunan (derived) — otomatis recalculate tiap kali amount/date berubah
+  function handleAmountInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const digitsOnly = target.value.replace(/\D/g, "");
+    amount = digitsOnly;
+
+    // Paksa update tampilan langsung ke elemen DOM,
+    // supaya nggak bergantung ke Svelte mendeteksi "perubahan"
+    target.value =
+      digitsOnly === ""
+        ? ""
+        : Number(digitsOnly).toLocaleString("id-ID");
+  }
+
+  // Dropdown cuma nampilin kategori yang tipenya sama dengan tipe transaksi
+  let filteredCategories = $derived(
+    categoryStore.items.filter((c) => c.type === type)
+  );
+
   let isFormValid = $derived(Number(amount) > 0 && date !== "");
 
   async function handleSubmit(e: SubmitEvent) {
@@ -13,7 +33,6 @@
     errorMessage = "";
     successMessage = "";
 
-    // Validasi client-side dulu, sebelum kirim ke server
     if (Number(amount) <= 0) {
       errorMessage = "Jumlah harus lebih dari 0";
       return;
@@ -29,7 +48,7 @@
       body: JSON.stringify({
         amount: Number(amount),
         type,
-        category_id: null,
+        category_id: categoryId === "" ? null : Number(categoryId),
         date,
       }),
     });
@@ -44,6 +63,7 @@
     successMessage = `Transaksi tersimpan (id: ${data.id})`;
     amount = "";
     date = "";
+    categoryId = "";
   }
 </script>
 
@@ -52,25 +72,30 @@
     <label for="amount">Jumlah</label>
     <input
       id="amount"
-      type="number"
-      bind:value={amount}
-      min="1"
-      step="1"
-      onkeydown={(e) => {
-        // Blokir karakter minus (-) dan notasi ilmiah (e/E) dari keyboard
-        if (e.key === "-" || e.key === "e" || e.key === "E") {
-          e.preventDefault();
-        }
-      }}
+      type="text"
+      inputmode="numeric"
+      value={amount === "" ? "" : Number(amount).toLocaleString("id-ID")}
+      oninput={handleAmountInput}
+      placeholder="0"
       required
     />
   </div>
 
   <div>
     <label for="type">Tipe</label>
-    <select id="type" bind:value={type}>
+    <select id="type" bind:value={type} onchange={() => (categoryId = "")}>
       <option value="expense">Pengeluaran</option>
       <option value="income">Pemasukan</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="category">Kategori</label>
+    <select id="category" bind:value={categoryId}>
+      <option value="">Tanpa kategori</option>
+      {#each filteredCategories as c (c.id)}
+        <option value={c.id}>{c.name}</option>
+      {/each}
     </select>
   </div>
 
