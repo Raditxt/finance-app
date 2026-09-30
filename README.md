@@ -58,4 +58,4 @@ Proyek ini sedang dalam pengembangan aktif, dikerjakan secara bertahap harian se
 
 ## Dibuat oleh
 
-[Raditya](https://github.com/Raditxt) — mahasiswa D4 Teknik Komputer & Jaringan, sedang membangun proyek ini sebagai bagian dari proses belajar full-stack development.
+[Raditya](https://github.com/Raditxt), Seorang mahasiswa D4 Teknik Komputer & Jaringan, yang sedang membangun proyek ini sebagai bagian dari proses belajar menjadi seorang software engineer.
