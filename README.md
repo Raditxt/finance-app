@@ -54,7 +54,7 @@ Proyek ini sedang dalam pengembangan aktif, dikerjakan secara bertahap harian se
 - [ ] Dashboard (savings rate, net worth)
 - [ ] Deploy
 
-**Fase berikutnya:** UI/UX & Branding → Fitur behavioral (journal pengeluaran, target "cukup", dsb) → Integrasi API broker (Indodax) → AI layer (analisis pola, terhubung ke [proyek analisis BTC](https://github.com/Raditxt/btc-market-analysis) terpisah)
+**Fase berikutnya:** UI/UX & Branding → Fitur behavioral (journal pengeluaran, target "cukup", dsb) → Integrasi API broker (Indodax) → AI layer (analisis pola, terhubung ke [proyek analisis BTC](https://github.com/Raditxt/btc-market-analysis))
 
 ## Dibuat oleh
 
