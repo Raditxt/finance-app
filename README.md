@@ -18,13 +18,13 @@ Personal finance tracker berbasis web, terinspirasi dari buku "The Psychology of
 cd backend
 bun install
 bun run index.ts
-# Server jalan di http://localhost:3000
+Server jalan di http://localhost:3000
 
 ### Frontend
 cd frontend
 bun install
 bun run dev
-# App jalan di http://localhost:5173
+App jalan di http://localhost:5173
 
 ## Status
 Masih dalam pengembangan aktif. Roadmap lengkap: Fondasi & CRUD (sedang berjalan) → UI/UX & Branding → Fitur behavioral (journal, dsb) → Integrasi Indodax → Deploy → AI layer.
