@@ -1,32 +1,47 @@
 <script lang="ts">
   import { categoryStore } from "./categories.svelte";
+  import { loadTransactions } from "./transactions.svelte";
+  import { editState } from "./editState.svelte";
 
-  let amount = $state(""); // nilai mentah, cuma digit, misal "50000"
+  let amount = $state("");
   let type = $state("expense");
   let categoryId = $state("");
   let date = $state("");
   let errorMessage = $state("");
   let successMessage = $state("");
 
+  // Setiap kali editState.current berubah (user klik baris di list),
+  // isi ulang form dengan data transaksi itu
+  $effect(() => {
+    const editing = editState.current;
+    if (editing) {
+      amount = String(editing.amount);
+      type = editing.type;
+      categoryId = editing.category_id === null ? "" : String(editing.category_id);
+      date = editing.date;
+    }
+  });
+
   function handleAmountInput(e: Event) {
     const target = e.target as HTMLInputElement;
     const digitsOnly = target.value.replace(/\D/g, "");
     amount = digitsOnly;
-
-    // Paksa update tampilan langsung ke elemen DOM,
-    // supaya nggak bergantung ke Svelte mendeteksi "perubahan"
-    target.value =
-      digitsOnly === ""
-        ? ""
-        : Number(digitsOnly).toLocaleString("id-ID");
+    target.value = digitsOnly === "" ? "" : Number(digitsOnly).toLocaleString("id-ID");
   }
 
-  // Dropdown cuma nampilin kategori yang tipenya sama dengan tipe transaksi
   let filteredCategories = $derived(
     categoryStore.items.filter((c) => c.type === type)
   );
 
   let isFormValid = $derived(Number(amount) > 0 && date !== "");
+
+  function resetForm() {
+    amount = "";
+    date = "";
+    categoryId = "";
+    type = "expense";
+    editState.current = null;
+  }
 
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
@@ -42,8 +57,14 @@
       return;
     }
 
-    const response = await fetch("http://localhost:3000/transactions", {
-      method: "POST",
+    const isEditing = editState.current !== null;
+    const url = isEditing
+      ? `http://localhost:3000/transactions/${editState.current!.id}`
+      : "http://localhost:3000/transactions";
+    const method = isEditing ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: Number(amount),
@@ -60,14 +81,18 @@
       return;
     }
 
-    successMessage = `Transaksi tersimpan (id: ${data.id})`;
-    amount = "";
-    date = "";
-    categoryId = "";
+    successMessage = isEditing
+      ? `Transaksi diperbarui (id: ${data.id})`
+      : `Transaksi tersimpan (id: ${data.id})`;
+
+    resetForm();
+    await loadTransactions(); // refresh list supaya perubahan langsung kelihatan
   }
 </script>
 
 <form onsubmit={handleSubmit}>
+  <h2>{editState.current ? "Edit Transaksi" : "Tambah Transaksi"}</h2>
+
   <div>
     <label for="amount">Jumlah</label>
     <input
@@ -104,7 +129,13 @@
     <input id="date" type="date" bind:value={date} required />
   </div>
 
-  <button type="submit" disabled={!isFormValid}>Simpan</button>
+  <button type="submit" disabled={!isFormValid}>
+    {editState.current ? "Perbarui" : "Simpan"}
+  </button>
+
+  {#if editState.current}
+    <button type="button" onclick={resetForm}>Batal Edit</button>
+  {/if}
 
   {#if errorMessage}
     <p style="color: red">{errorMessage}</p>

@@ -18,6 +18,33 @@ const app = new Hono();
 app.use("/*", cors());
 
 // =====================
+// Helpers
+// =====================
+
+// Cek category_id valid (ada di database) dan tipenya cocok sama tipe transaksi.
+// Dipakai di POST dan PUT /transactions supaya nggak duplikat logic.
+function validateCategoryForTransaction(
+  categoryId: unknown,
+  type: string
+): string | null {
+  if (categoryId === null || categoryId === undefined) {
+    return null; // kategori opsional, nggak masalah kalau kosong
+  }
+
+  const category = db
+    .query("SELECT type FROM categories WHERE id = ?")
+    .get(categoryId as number) as { type: string } | null; // tambahin "as number" di sini
+
+  if (!category) {
+    return "category_id tidak ditemukan";
+  }
+  if (category.type !== type) {
+    return "tipe kategori tidak sesuai dengan tipe transaksi";
+  }
+  return null;
+}
+
+// =====================
 // Health Check
 // =====================
 // Endpoint untuk memastikan server backend aktif dan merespons dengan baik
@@ -57,21 +84,8 @@ app.post("/transactions", async (c) => {
   if (dateError) return c.json({ error: dateError }, 400);
 
   // Validasi category_id: kalau diisi, harus ada di tabel categories dan tipenya cocok
-  if (category_id !== null && category_id !== undefined) {
-    const category = db
-      .query("SELECT type FROM categories WHERE id = ?")
-      .get(category_id) as { type: string } | null;
-
-    if (!category) {
-      return c.json({ error: "category_id tidak ditemukan" }, 400);
-    }
-    if (category.type !== type) {
-      return c.json(
-        { error: "tipe kategori tidak sesuai dengan tipe transaksi" },
-        400
-      );
-    }
-  }
+  const categoryError = validateCategoryForTransaction(category_id, type);
+  if (categoryError) return c.json({ error: categoryError }, 400);
 
   const result = db.run(
     "INSERT INTO transactions (amount, type, category_id, date) VALUES (?, ?, ?, ?)",
@@ -108,8 +122,12 @@ app.put("/transactions/:id", async (c) => {
   const dateError = validateDate(date);
   if (dateError) return c.json({ error: dateError }, 400);
 
+  const categoryError = validateCategoryForTransaction(category_id, type);
+  if (categoryError) return c.json({ error: categoryError }, 400);
+
+  // Pastikan transaksi yang mau diedit beneran ada
   const existing = db
-    .query("SELECT * FROM transactions WHERE id = ?")
+    .query("SELECT id FROM transactions WHERE id = ?")
     .get(id);
 
   if (!existing) {

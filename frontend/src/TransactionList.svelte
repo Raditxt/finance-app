@@ -1,25 +1,18 @@
 <script lang="ts">
-  type Transaction = {
-    id: number;
-    amount: number;
-    type: "income" | "expense";
-    category_id: number | null;
-    date: string;
-  };
+  import { transactionStore, loadTransactions } from "./transactions.svelte";
+  import { editState } from "./editState.svelte";
 
-  let transactions = $state<Transaction[]>([]);
   let loading = $state(true);
 
-  async function loadTransactions() {
-    loading = true;
-    const response = await fetch("http://localhost:3000/transactions");
-    transactions = await response.json();
-    loading = false;
-  }
-
   $effect(() => {
-    loadTransactions();
+    loadTransactions().then(() => {
+      loading = false;
+    });
   });
+
+  function startEdit(t: (typeof transactionStore.items)[number]) {
+    editState.current = t;
+  }
 </script>
 
 <div>
@@ -27,7 +20,7 @@
 
   {#if loading}
     <p>Memuat...</p>
-  {:else if transactions.length === 0}
+  {:else if transactionStore.items.length === 0}
     <p>Belum ada transaksi.</p>
   {:else}
     <table>
@@ -39,8 +32,8 @@
         </tr>
       </thead>
       <tbody>
-        {#each transactions as t (t.id)}
-          <tr>
+        {#each transactionStore.items as t (t.id)}
+          <tr onclick={() => startEdit(t)} style="cursor: pointer">
             <td>{t.date}</td>
             <td>{t.type}</td>
             <td>{t.amount.toLocaleString("id-ID")}</td>
