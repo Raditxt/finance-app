@@ -98,10 +98,17 @@ app.post("/transactions", async (c) => {
   );
 });
 
-// GET — Ambil semua transaksi
+// GET — Ambil semua transaksi (dengan nama kategori via JOIN)
 app.get("/transactions", (c) => {
   const transactions = db
-    .query("SELECT * FROM transactions ORDER BY date DESC")
+    .query(`
+      SELECT
+        transactions.*,
+        categories.name AS category_name
+      FROM transactions
+      LEFT JOIN categories ON transactions.category_id = categories.id
+      ORDER BY transactions.date DESC
+    `)
     .all();
   return c.json(transactions);
 });
@@ -175,6 +182,15 @@ app.post("/categories", async (c) => {
 
   const typeError = validateCategoryType(type);
   if (typeError) return c.json({ error: typeError }, 400);
+
+  // Cek duplikasi sebelum insert, biar pesan errornya jelas
+  const existing = db
+    .query("SELECT id FROM categories WHERE name = ? AND type = ?")
+    .get(name, type);
+
+  if (existing) {
+    return c.json({ error: "Kategori dengan nama dan tipe ini sudah ada" }, 400);
+  }
 
   const result = db.run(
     "INSERT INTO categories (name, type) VALUES (?, ?)",

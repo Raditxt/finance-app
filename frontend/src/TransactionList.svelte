@@ -50,6 +50,7 @@
         <tr>
           <th>Tanggal</th>
           <th>Tipe</th>
+          <th>Kategori</th>
           <th>Jumlah</th>
           <th></th>
         </tr>
@@ -59,6 +60,7 @@
           <tr onclick={() => startEdit(t)} style="cursor: pointer">
             <td>{t.date}</td>
             <td>{t.type}</td>
+            <td>{t.category_name ?? "-"}</td>
             <td>{t.amount.toLocaleString("id-ID")}</td>
             <td>
               <button type="button" onclick={(e) => handleDelete(e, t.id)}>Hapus</button>

@@ -3,6 +3,7 @@ export type Transaction = {
   amount: number;
   type: "income" | "expense";
   category_id: number | null;
+  category_name: string | null; // baris baru
   date: string;
 };
 

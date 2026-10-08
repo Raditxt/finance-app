@@ -25,5 +25,12 @@ db.run(`
   )
 `);
 
+// Unique index agar kombinasi (name, type) pada tabel categories tidak duplikat.
+// Mencegah input kategori yang sama dengan tipe yang sama, misal "Makanan" + "expense" dua kali.
+db.run(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_name_type
+  ON categories(name, type)
+`);
+
 // Ekspor objek koneksi database agar bisa dipakai untuk query di file lain (routes/controllers)
 export default db;
