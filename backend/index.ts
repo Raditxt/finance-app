@@ -208,6 +208,44 @@ app.get("/categories", (c) => {
   return c.json(categories);
 });
 
+// =====================
+// Summary
+// =====================
+
+// GET — Ringkasan keuangan per bulan. Query opsional: ?month=YYYY-MM (default: bulan berjalan)
+app.get("/summary", (c) => {
+  const monthParam = c.req.query("month");
+
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const month = monthParam ?? currentMonth;
+
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+    return c.json({ error: "month harus berformat YYYY-MM" }, 400);
+  }
+
+  const row = db
+    .query(
+      `SELECT
+         COALESCE(SUM(CASE WHEN type = 'income'  THEN amount END), 0) AS total_income,
+         COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) AS total_expense
+       FROM transactions
+       WHERE substr(date, 1, 7) = ?`
+    )
+    .get(month) as { total_income: number; total_expense: number };
+
+  const savings = row.total_income - row.total_expense;
+  const savingsRate = row.total_income > 0 ? savings / row.total_income : null;
+
+  return c.json({
+    month,
+    total_income: row.total_income,
+    total_expense: row.total_expense,
+    savings,
+    savings_rate: savingsRate,
+  });
+});
+
 // Ekspor konfigurasi server Bun (port + fetch handler)
 export default {
   port: process.env.PORT || 3000,
