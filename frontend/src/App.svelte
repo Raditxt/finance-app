@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Dashboard from "./Dashboard.svelte";
   import TransactionForm from "./TransactionForm.svelte";
   import TransactionList from "./TransactionList.svelte";
   import CategoryForm from "./CategoryForm.svelte";
@@ -11,6 +12,7 @@
 
 <main>
   <h1>Finance Tracker</h1>
+  <Dashboard />
   <TransactionForm />
   <CategoryForm />
   <TransactionList />

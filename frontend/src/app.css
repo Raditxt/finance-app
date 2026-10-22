@@ -88,3 +88,27 @@ th {
   font-size: 0.85rem;
   text-transform: uppercase;
 }
+
+.dashboard {
+  background: #22223b;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.dashboard h2 {
+  margin-top: 0;
+}
+
+.dashboard .month-picker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dashboard .rate {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0.25rem 0 0.5rem;
+}
